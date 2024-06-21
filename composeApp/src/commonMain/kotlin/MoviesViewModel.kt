@@ -1,5 +1,6 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import database.AppDatabase
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -7,10 +8,14 @@ import io.ktor.client.request.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MoviesViewModel : ViewModel() {
+class MoviesViewModel(private val appDatabase: AppDatabase) : ViewModel() {
+
+    private val moviesDao = appDatabase.getDao()
+
     private val _uiState = MutableStateFlow(MoviesUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -20,15 +25,24 @@ class MoviesViewModel : ViewModel() {
         }
     }
 
+    init {
+        viewModelScope.launch {
+            moviesDao.getAllAsFlow()
+                .collectLatest { movies ->
+                    _uiState.update { it.copy(movies = movies) }
+                }
+        }
+    }
+
     fun updateMovies() {
         viewModelScope.launch {
             val movies = fetchMovies()
-            _uiState.update { it.copy(movies = movies) }
+            moviesDao.refreshMovies(movies)
         }
     }
 
     private suspend fun fetchMovies() = httpClient
-        .get("https://my-json-server.typicode.com/necatisozer/movieapi/popular")
+        .get("https://my-json-server.typicode.com/necatisozer/KMP-MovieApp/popular")
         .body<List<Movie>>()
 
     override fun onCleared() {

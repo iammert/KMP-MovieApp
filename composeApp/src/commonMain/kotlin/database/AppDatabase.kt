@@ -1,34 +1,37 @@
 package database
 
+import Movie
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
-@Database(entities = [TodoEntity::class], version = 1)
+@Database(entities = [Movie::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun getDao(): TodoDao
+    abstract fun getDao(): MovieDao
 }
 
 @Dao
-interface TodoDao {
-    @Insert
-    suspend fun insert(item: TodoEntity)
+interface MovieDao {
 
-    @Query("SELECT count(*) FROM TodoEntity")
-    suspend fun count(): Int
+    @Transaction
+    suspend fun refreshMovies(item: List<Movie>){
+        deleteAll()
+        insertAll(item)
+    }
 
-    @Query("SELECT * FROM TodoEntity")
-    fun getAllAsFlow(): Flow<List<TodoEntity>>
+    @Query("DELETE FROM Movie")
+    suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(item: List<Movie>)
+
+    @Query("SELECT * FROM Movie")
+    fun getAllAsFlow(): Flow<List<Movie>>
 }
-
-@Entity
-data class TodoEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val title: String,
-    val content: String
-)
