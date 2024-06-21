@@ -1,6 +1,6 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import database.AppDatabase
+import database.MovieDao
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -12,9 +12,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class MoviesViewModel(private val appDatabase: AppDatabase) : ViewModel() {
-
-    private val moviesDao = appDatabase.getDao()
+class MoviesViewModel(private val moviesDao: MovieDao) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MoviesUiState())
     val uiState = _uiState.asStateFlow()

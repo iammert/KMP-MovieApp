@@ -29,12 +29,13 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
-fun App(appDatabase: AppDatabase) {
+fun App() {
     MaterialTheme {
         val navController = rememberNavController()
         NavHost(navController, "movies") {
             composable("movies") {
-                val viewModel = viewModel { MoviesViewModel(appDatabase) }
+                val viewModel =
+                    viewModel { MoviesViewModel(appFactoryInstance.getDatabase().getDao()) }
                 val uiState by viewModel.uiState.collectAsState()
 
                 LaunchedEffect(viewModel) {
