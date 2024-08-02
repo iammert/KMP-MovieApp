@@ -14,11 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,12 +28,20 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import database.AppDatabase
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import player.AudioPlayer
+import player.PlayerState
 
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
+
         val navController = rememberNavController()
+
+        val playerState = remember { PlayerState() }
+
+        val player = remember { AudioPlayer(playerState) }
+
         NavHost(navController, "movies") {
             composable("movies") {
                 val viewModel =
@@ -43,6 +53,13 @@ fun App() {
                 }
 
                 MoviesScreen(uiState)
+
+                LaunchedEffect(Unit){
+                    player.setSongUrl("https://download.samplelib.com/mp3/sample-3s.mp3")
+                }
+
+                Text("Is Playing: ${playerState.isPlaying}", fontSize = 22.sp)
+
             }
         }
     }
